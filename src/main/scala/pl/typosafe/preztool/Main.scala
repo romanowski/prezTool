@@ -44,30 +44,46 @@ object Main extends App with SimpleRoutingApp {
     })
   }
 
-  SwingUtilities.invokeLater(setupGui _)
+  //SwingUtilities.invokeLater(setupGui _)
 
   import spray.http.MediaTypes._
+
+  def asHTML(content: String) = respondWithMediaType(`text/html`)(complete(content))
 
   startServer(interface = "localhost", port = 8888) {
     pathEndOrSingleSlash {
       get {
-        respondWithMediaType(`text/html`)(complete(Page.render(index)))
+        asHTML(Page.render(index))
       }
     } ~
-      path("edit" / String){ path =>
-
+      pathPrefix("edit") {
+        (pathEndOrSingleSlash | path("index.html")) {
+          parameter('path) { editPath =>
+            get {
+              asHTML(index.editor.read(editPath))
+            } ~
+            post {
+              entity(as[String]) { data =>
+                index.editor.save(editPath, data)
+                complete("Saved")
+              }
+            }
+          }
+        } ~
+          getFromResourceDirectory("pl/typosafe/preztool/editor")
       } ~
       pathPrefix(Segment.hflatMap(index.chapter)) { chapter =>
         pathEndOrSingleSlash {
           get {
-            respondWithMediaType(`text/html`)(complete(Page.render(chapter)))
+            asHTML(Page.render(chapter))
           }
         } ~
-        path(Rest){fileName =>
-          getFromFile(chapter.path.resolve(fileName).toFile)
-        } ~
-          getFromResourceDirectory("pl/typosafe/preztool/reveal")
+          path(Rest) { fileName =>
+            getFromFile(chapter.subsection(fileName).toFile)
+          } ~
+          getFromResourceDirectory("pl/typosafe/preztool/assets")
       } ~
-     getFromResourceDirectory("pl/typosafe/preztool/reveal")
+      getFromResourceDirectory("pl/typosafe/preztool/assets")
+
   }
 }

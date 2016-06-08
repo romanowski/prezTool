@@ -44,22 +44,30 @@
 	<div class="slides">
 		<section data-markdown>
 			<script type="text/template">
-			### $TITLE
+			### {{name}}
 
 			<br>
-			### $AUTHOR
+			### {{author}}
 			<br>
-			##### $mail
+			##### {{mail}}
 			</script>
 		</section>
+
+		<section data-markdown>
+			<script type="text/template">
+			{{#subsections}}
+			1. {{title}}
+			{{/subsections}}
+			</script>
+		</section>
+
 		<!-- ################################################################################################################ -->
 
-		<section data-markdown="./description.md"
-		         data-separator="^\n\n\n"
-		         data-separator-vertical="^\n\n"
-		         data-separator-notes="^Note:"
-		         data-charset="iso-8859-15">
+		{{#subsections}}
+		<section data-markdown="{{path}}"
+		         data-separator-vertical="^---$">
 		</section>
+		{{/subsections}}
 
 		<!-- ################################################################################################################ -->
 
